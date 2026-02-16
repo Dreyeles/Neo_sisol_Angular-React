@@ -1,0 +1,97 @@
+<div class="dashboard admin-dashboard">
+  <div class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <img src="/logo.svg" alt="Neo SISOL" class="sidebar-logo" />
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item" [class.active]="activeSection === 'pacientes'" (click)="setActiveSection('pacientes')">👥 Pacientes</button>
+      <button class="nav-item" [class.active]="activeSection === 'medicos'" (click)="setActiveSection('medicos')">👨‍⚕️ Médicos</button>
+      <button class="nav-item" [class.active]="activeSection === 'servicios'" (click)="setActiveSection('servicios')">💊 Servicios</button>
+      <button class="nav-item" [class.active]="activeSection === 'reportes'" (click)="setActiveSection('reportes')">📊 Reportes</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-button" (click)="onLogout()">Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <header class="dashboard-header">
+      <div>
+        <h1>Panel de Administración</h1>
+        <p>Bienvenido, {{ user?.nombre || 'Administrador' }}</p>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <div class="section-header-compact">
+        <h2>Gestión de {{ activeSection | titlecase }}</h2>
+        <div class="search-filters-bar">
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar..." class="search-input" />
+          <button *ngIf="activeSection === 'medicos' && !showAddDoctorForm" class="btn-primary" (click)="showAddDoctorForm = true">➕ Agregar Médico</button>
+        </div>
+      </div>
+
+      <!-- Pacientes -->
+      <div *ngIf="activeSection === 'pacientes'">
+        <div class="historial-list">
+          <div *ngFor="let p of filteredPatients" class="cita-card">
+            <div class="cita-info">
+              <h3>{{ p.nombres }} {{ p.apellidos }}</h3>
+              <p>DNI: {{ p.dni }} | Email: {{ p.email }}</p>
+            </div>
+            <div class="cita-actions">
+              <button class="btn-secondary">Ver Historia</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medicos -->
+      <div *ngIf="activeSection === 'medicos'">
+        <div *ngIf="showAddDoctorForm" class="agendar-form" style="margin-bottom: 20px;">
+           <h3>Nuevo Médico</h3>
+           <div class="form-group">
+             <label>Usuario (medico.usuario@sisol.com)</label>
+             <input type="text" [(ngModel)]="newDoctor.username" placeholder="usuario" />
+           </div>
+           <div class="form-group">
+            <label>Nombres</label>
+            <input type="text" [(ngModel)]="newDoctor.nombres" />
+          </div>
+          <button class="btn-primary" (click)="handleAddDoctor()">Guardar</button>
+          <button class="btn-secondary" (click)="showAddDoctorForm = false">Cancelar</button>
+        </div>
+
+        <div class="historial-list">
+          <div *ngFor="let d of filteredDoctors" class="cita-card">
+            <div class="cita-info">
+              <h3>{{ d.nombres }} {{ d.apellidos }}</h3>
+              <p>Especialidad: {{ d.especialidad_nombre }} | CMP: {{ d.numero_colegiatura }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Servicios -->
+      <div *ngIf="activeSection === 'servicios'">
+        <div class="historial-list">
+          <div *ngFor="let s of services" class="cita-card">
+            <div class="cita-info">
+              <h3>{{ s.nombre }}</h3>
+              <p>Precio: S/ {{ s.costo }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reportes -->
+      <div *ngIf="activeSection === 'reportes'">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          <div class="cita-card"><h3>156</h3><p>Citas Mes</p></div>
+          <div class="cita-card"><h3>{{ patients.length }}</h3><p>Pacientes</p></div>
+          <div class="cita-card"><h3>{{ doctors.length }}</h3><p>Médicos</p></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,348 @@
+<div class="dashboard">
+  <div class="dashboard-sidebar">
+    <div class="sidebar-header">
+      <img src="/logo.svg" alt="Neo SISOL" class="sidebar-logo" />
+    </div>
+    <nav class="sidebar-nav">
+      <button
+        class="nav-item"
+        [class.active]="activeSection === 'citas'"
+        (click)="setActiveSection('citas')"
+      >
+        📅 Mis Citas
+      </button>
+      <button
+        class="nav-item"
+        [class.active]="activeSection === 'agendar'"
+        (click)="setActiveSection('agendar')"
+      >
+        ➕ Agendar Cita
+      </button>
+      <button
+        class="nav-item"
+        [class.active]="activeSection === 'perfil'"
+        (click)="setActiveSection('perfil')"
+      >
+        👤 Mi Perfil
+      </button>
+      <button
+        class="nav-item"
+        [class.active]="activeSection === 'historial'"
+        (click)="setActiveSection('historial'); loadCitas()"
+      >
+        📋 Historial
+      </button>
+      <button
+        class="nav-item"
+        [class.active]="activeSection === 'resultados'"
+        (click)="setActiveSection('resultados')"
+      >
+        🔬 Resultados
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-button" (click)="onLogout()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <header class="dashboard-header">
+      <div>
+        <h1>Bienvenido, {{ user?.nombre || 'Usuario' }}</h1>
+        <p>Panel de Paciente</p>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <!-- Mis Citas Section -->
+      <div *ngIf="activeSection === 'citas'" class="section-content">
+        <h2>Mis Próximas Citas</h2>
+        <div class="citas-list">
+          <div *ngIf="loadingCitas">Cargando citas...</div>
+          <div *ngIf="!loadingCitas && proximasCitas.length === 0" class="empty-state">
+            <div style="font-size: 48px; margin-bottom: 16px;">📅</div>
+            <p>No tienes ninguna cita agendada</p>
+            <button class="btn-primary" (click)="setActiveSection('agendar')">Agenda tu primera cita</button>
+          </div>
+          <div *ngFor="let cita of proximasCitas" class="cita-card">
+            <div class="cita-info">
+              <h3>{{ cita.especialidad }}</h3>
+              <p>Dr. {{ cita.medico_nombre }} {{ cita.medico_apellido }}</p>
+              <p class="cita-fecha">📅 {{ cita.fecha_cita | date:'dd/MM/yyyy' }} - {{ cita.hora_cita }}</p>
+            </div>
+            <div class="cita-actions">
+              <span class="historial-status" [ngClass]="cita.estado">{{ cita.estado }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agendar Section -->
+      <div *ngIf="activeSection === 'agendar'" class="section-content">
+        <h2>Agendar Nueva Cita</h2>
+        <form class="agendar-form" (ngSubmit)="handleAgendarCita()">
+          <div class="form-group">
+            <label>Especialidad</label>
+            <select [(ngModel)]="citaEspecialidad" name="especialidad" (change)="onEspecialidadChange()" required>
+              <option value="">Seleccione una especialidad</option>
+              <option *ngFor="let esp of especialidades" [value]="esp.id_especialidad">{{ esp.nombre }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Médico</label>
+            <select [(ngModel)]="citaMedico" name="medico" [disabled]="!citaEspecialidad || loadingMedicos" (change)="checkAvailability()" required>
+              <option value="">Seleccione un médico</option>
+              <option *ngFor="let med of medicos" [value]="med.id_medico">{{ med.nombres }} {{ med.apellidos }}</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha</label>
+              <input type="date" [(ngModel)]="citaFecha" name="fecha" (change)="checkAvailability()" required />
+            </div>
+
+            <div class="form-group">
+              <label>Turno</label>
+              <select [(ngModel)]="citaTurno" name="turno" (change)="checkAvailability()" required>
+                <option value="">Seleccione un turno</option>
+                <option value="manana">Mañana (7:00 AM - 12:00 PM)</option>
+                <option value="tarde">Tarde (2:00 PM - 7:00 PM)</option>
+              </select>
+            </div>
+          </div>
+
+          <div *ngIf="checkingAvailability" class="status-checking">
+            <div class="spinner"></div>
+            Verificando disponibilidad...
+          </div>
+          <div *ngIf="!checkingAvailability && availability" class="availability-message" [ngClass]="availability.available ? 'success' : 'error'">
+            {{ availability.message }}
+          </div>
+
+          <div class="form-group">
+            <label>Motivo de la consulta</label>
+            <textarea [(ngModel)]="citaMotivo" name="motivo" placeholder="Describa el motivo..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary" [disabled]="!availability?.available || checkingAvailability">
+            Agendar Cita
+          </button>
+        </form>
+      </div>
+
+      <!-- Perfil Section -->
+      <div *ngIf="activeSection === 'perfil'" class="section-content">
+        <div class="perfil-card">
+          <div class="perfil-header">
+            <div class="avatar">{{ user?.nombre?.charAt(0) }}</div>
+            <h3>{{ user?.nombre }} {{ user?.apellidos }}</h3>
+          </div>
+          <div class="perfil-info">
+            <div class="info-item"><label>DNI:</label><span>{{ user?.dni }}</span></div>
+            <div class="info-item"><label>Email:</label><span>{{ user?.email }}</span></div>
+            <div class="info-item"><label>Teléfono:</label><span>{{ user?.telefono }}</span></div>
+            <div class="info-item"><label>Dirección:</label><span>{{ user?.direccion }}</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Historial Section -->
+      <div *ngIf="activeSection === 'historial'" class="section-content">
+        <h2>Historial de Citas</h2>
+        
+        <!-- Filter Bar -->
+        <div class="history-filters">
+          <div class="filter-group">
+            <label>Filtrar por Fecha</label>
+            <input type="date" [(ngModel)]="filterFecha" placeholder="dd/mm/aaaa" />
+          </div>
+          <div class="filter-group">
+            <label>Filtrar por Especialidad</label>
+            <select [(ngModel)]="filterEspecialidad">
+              <option value="">Todas las especialidades</option>
+              <option *ngFor="let esp of especialidades" [value]="esp.id_especialidad">{{ esp.nombre }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="history-list">
+          <div *ngIf="loadingCitas" class="loading-state">Cargando historial...</div>
+          <div *ngIf="!loadingCitas && filteredHistorial.length === 0" class="empty-state">
+            <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+            <p>No se encontraron citas con los filtros seleccionados.</p>
+          </div>
+          
+          <div *ngFor="let cita of filteredHistorial" class="history-card" [ngClass]="cita.estado">
+            <div class="card-indicator"></div>
+            <div class="card-main">
+              <div class="card-info">
+                <h3>{{ cita.especialidad }}</h3>
+                <p class="medico-name">Dr. {{ cita.medico_nombre }} {{ cita.medico_apellido }}</p>
+                <div class="card-meta">
+                  <span class="meta-item">🗓️ {{ cita.fecha_cita | date:'dd/MM/yyyy' }} - {{ cita.hora_cita }}</span>
+                </div>
+              </div>
+              <div class="card-status-info">
+                <span class="status-badge" [ngClass]="cita.estado">{{ cita.estado }}</span>
+                <button *ngIf="cita.estado === 'completada'" class="btn-download" (click)="descargarInforme(cita.id_cita)">
+                  📄 Descargar Informe
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeSection === 'resultados'" class="section-content">
+        <h2>Resultados Médicos</h2>
+        <div class="empty-state">
+          <div style="font-size: 48px; margin-bottom: 16px;">🔬</div>
+          <p>Tus resultados de laboratorio y exámenes aparecerán aquí.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de Pago -->
+  <div class="payment-modal-overlay" *ngIf="showPaymentModal" (click)="showPaymentModal = false">
+    <div class="payment-modal" (click)="$event.stopPropagation()">
+      <div class="payment-modal-header">
+        <div class="header-title">
+          <span class="card-icon">💳</span>
+          <h3>Pasarela de Pago</h3>
+        </div>
+        <button class="close-modal-round" (click)="showPaymentModal = false">✕</button>
+      </div>
+
+      <div class="payment-modal-body">
+        <div class="payment-summary-card">
+          <h4>RESUMEN DE LA CITA</h4>
+          <div class="summary-details">
+            <div class="summary-row">
+              <span class="label">Especialidad:</span>
+              <span class="value">{{ getSelectedSpecialtyName() }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Médico:</span>
+              <span class="value">{{ getSelectedDoctorName() }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Fecha:</span>
+              <span class="value">{{ citaFecha }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Turno:</span>
+              <span class="value">{{ getFormattedTurno() }}</span>
+            </div>
+            <div class="divider-line"></div>
+            <div class="summary-row total-row">
+              <span class="label">Total a pagar:</span>
+              <span class="total-value">S/ 50.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-selection">
+          <h4>Seleccione método de pago</h4>
+          <div class="payment-methods-grid">
+            <label class="method-card" [class.selected]="metodoPago === 'tarjeta_debito'">
+              <input type="radio" [(ngModel)]="metodoPago" name="metodoPago" value="tarjeta_debito" class="hidden-radio" />
+              <div class="radio-circle"></div>
+              <span class="method-icon">💳</span>
+              <span class="method-label">Tarjeta de Débito</span>
+            </label>
+            <label class="method-card" [class.selected]="metodoPago === 'tarjeta_credito'">
+              <input type="radio" [(ngModel)]="metodoPago" name="metodoPago" value="tarjeta_credito" class="hidden-radio" />
+              <div class="radio-circle"></div>
+              <span class="method-icon">💳</span>
+              <span class="method-label">Tarjeta de Crédito</span>
+            </label>
+            <label class="method-card" [class.selected]="metodoPago === 'transferencia'">
+              <input type="radio" [(ngModel)]="metodoPago" name="metodoPago" value="transferencia" class="hidden-radio" />
+              <div class="radio-circle"></div>
+              <span class="method-icon">🏦</span>
+              <span class="method-label">Transferencia Bancaria</span>
+            </label>
+            <label class="method-card" [class.selected]="metodoPago === 'billetera_digital'">
+              <input type="radio" [(ngModel)]="metodoPago" name="metodoPago" value="billetera_digital" class="hidden-radio" />
+              <div class="radio-circle"></div>
+              <span class="method-icon">📱</span>
+              <span class="method-label">Billeteras Digitales</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Campos adicionales para Billeteras Digitales (si se seleccionan) -->
+        <div *ngIf="metodoPago === 'billetera_digital'" class="extra-fields-card">
+          <label class="section-label">Seleccione su billetera:</label>
+          <div class="wallet-options-grid">
+            <label class="wallet-card" [class.selected]="billeteraEspecifica === 'yape'">
+              <input type="radio" [(ngModel)]="billeteraEspecifica" name="billetera" value="yape" class="hidden-radio" />
+              <div class="radio-circle"></div>
+              <img src="yape-logo.png" alt="Yape" class="wallet-logo" />
+              <span class="wallet-name">Yape</span>
+            </label>
+            <label class="wallet-card" [class.selected]="billeteraEspecifica === 'plin'">
+              <input type="radio" [(ngModel)]="billeteraEspecifica" name="billetera" value="plin" class="hidden-radio" />
+              <div class="radio-circle"></div>
+              <img src="plin-logo.png" alt="Plin" class="wallet-logo" />
+              <span class="wallet-name">Plin</span>
+            </label>
+          </div>
+          <div class="form-group-compact mt-20" *ngIf="billeteraEspecifica === 'yape'">
+            <label>Código de Aprobación</label>
+            <input type="text" [(ngModel)]="numeroTransaccion" placeholder="Ingrese el código de aprobación" />
+          </div>
+
+          <div class="qr-payment-section">
+            <p class="qr-instruction">Escanea el código QR para pagar con {{ billeteraEspecifica === 'yape' ? 'Yape' : 'Plin' }}</p>
+            <div class="qr-card">
+              <img [src]="billeteraEspecifica === 'yape' ? 'qr-yape.png' : 'qr-plin.png'" alt="QR Code" class="qr-image" />
+              <p class="qr-amount">Monto: S/ 50.00</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulario de Transferencia Bancaria -->
+        <div *ngIf="metodoPago === 'transferencia'" class="extra-fields-card">
+          <div class="form-group-compact">
+            <label>Número de Transacción</label>
+            <input type="text" [(ngModel)]="numeroTransaccion" placeholder="Ingrese el número de transacción" />
+          </div>
+        </div>
+
+        <!-- Formulario de Tarjeta (Débito o Crédito) -->
+        <div *ngIf="metodoPago === 'tarjeta_debito' || metodoPago === 'tarjeta_credito'" class="extra-fields-card card-form">
+          <div class="form-group-compact">
+            <label>Número de Tarjeta</label>
+            <input type="text" [(ngModel)]="numeroTarjeta" placeholder="0000 0000 0000 0000" maxlength="19" />
+          </div>
+          <div class="form-row-compact">
+            <div class="form-group-compact">
+              <label>Fecha de Expiración</label>
+              <input type="text" [(ngModel)]="fechaExpiracion" placeholder="MM/AA" maxlength="5" />
+            </div>
+            <div class="form-group-compact">
+              <label>CVV</label>
+              <input type="password" [(ngModel)]="cvv" placeholder="123" maxlength="4" />
+            </div>
+          </div>
+          <div class="form-group-compact">
+            <label>Nombre del Titular</label>
+            <input type="text" [(ngModel)]="nombreTitular" placeholder="Como aparece en la tarjeta" />
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-modal-footer">
+        <button class="btn-cancel" (click)="showPaymentModal = false">Cancelar</button>
+        <button class="btn-confirm" [disabled]="processingPayment || !metodoPago" (click)="handleConfirmPayment()">
+          {{ processingPayment ? 'Procesando...' : 'Confirmar Pago' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

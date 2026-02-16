@@ -1,0 +1,411 @@
+<div class="dashboard doctor-dashboard">
+  <!-- Sidebar -->
+  <aside class="dashboard-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <span class="logo-text">SISOL<span class="logo-sub">SALUD</span></span>
+      </div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <button class="nav-item" [class.active]="activeSection === 'agenda'" (click)="setActiveSection('agenda')">
+        <span class="nav-icon">📅</span> Mi Agenda
+      </button>
+      <button class="nav-item" [class.active]="activeSection === 'pacientes'" (click)="setActiveSection('pacientes')">
+        <span class="nav-icon">👥</span> Mis Pacientes
+      </button>
+      <button class="nav-item" [class.active]="activeSection === 'historial'" (click)="setActiveSection('historial')">
+        <span class="nav-icon">📋</span> Historial Médico
+      </button>
+      <button class="nav-item" [class.active]="activeSection === 'perfil'" (click)="setActiveSection('perfil')">
+        <span class="nav-icon">👤</span> Mi Perfil
+      </button>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+      <button class="btn-logout" (click)="onLogout()">
+        <span class="logout-icon">↪</span> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    <header class="dashboard-top-header">
+      <div class="welcome-text">
+        <h1>Bienvenido, Dr. {{ user?.nombre || 'Beatriz' }}</h1>
+        <p class="subtitle">Panel Médico</p>
+      </div>
+    </header>
+
+    <main class="dashboard-main-area">
+      <!-- Agenda Section -->
+      <section *ngIf="activeSection === 'agenda'" class="agenda-section">
+        <h2 class="section-title">Agenda del Día</h2>
+        
+        <div class="appointments-container">
+          <div *ngIf="loadingCitas" class="loading-state">Cargando agenda...</div>
+          
+          <div *ngIf="!loadingCitas">
+            <div *ngIf="citas.length === 0" class="empty-agenda">
+              <p>No tienes citas pendientes</p>
+            </div>
+
+            <div *ngFor="let cita of citas" class="appointment-card">
+              <div class="appointment-details">
+                <h3 class="patient-name">Paciente: {{ cita.paciente_nombre }} {{ cita.paciente_apellido }}</h3>
+                <p class="appointment-reason">Motivo: {{ cita.motivo_consulta }}</p>
+                <div class="appointment-meta">
+                  <span class="meta-item"><span class="meta-icon">🗓️</span> {{ cita.fecha_cita | date:'dd \'de\' MMMM \'de\' yyyy' }}</span>
+                  <span class="meta-item"><span class="meta-icon">🕒</span> {{ cita.hora_cita }}</span>
+                </div>
+                <span class="status-badge" [ngClass]="cita.estado">{{ cita.estado }}</span>
+              </div>
+              
+              <div class="appointment-actions">
+                <button class="btn-action btn-start" (click)="handleIniciarConsulta(cita)">Iniciar Consulta</button>
+                <button class="btn-action btn-history" (click)="activeSection = 'pacientes'">Ver Historia</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mis Pacientes Section -->
+      <section *ngIf="activeSection === 'pacientes'" class="patients-section">
+        <h2 class="section-title">Mis Pacientes Atendidos</h2>
+        
+        <div class="patients-grid">
+          <div *ngIf="loadingPacientes" class="loading-state">Cargando pacientes...</div>
+          
+          <div *ngIf="!loadingPacientes" class="patients-list-wrapper">
+            <div *ngIf="pacientes.length === 0" class="no-results-state">
+              <p>No tienes pacientes atendidos todavía.</p>
+            </div>
+
+            <div *ngFor="let pte of pacientes" class="patient-card">
+              <div class="patient-profile">
+                <div class="profile-icon">
+                  <svg viewBox="0 0 24 24" class="user-svg">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="patient-info">
+                <h3 class="patient-card-name">{{ pte.nombres }} {{ pte.apellidos }}</h3>
+                <div class="patient-meta-details">
+                  <p class="meta-row"><span class="label">DNI:</span> <span class="value">{{ pte.dni }}</span></p>
+                  <p class="meta-row"><span class="label">Última visita:</span> <span class="value">{{ pte.ultima_cita | date:'dd/MM/yyyy' }}</span></p>
+                </div>
+              </div>
+
+              <div class="patient-actions">
+                <button class="btn-view-medical" (click)="handleIniciarConsulta(pte)">
+                  Ver Atención Médica
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Historial Médico Section -->
+      <section *ngIf="activeSection === 'historial'" class="history-global-section">
+        <h2 class="section-title">Historial Médico Global</h2>
+        
+        <!-- Search Bar -->
+        <div class="search-container-card">
+          <div class="search-inputs">
+            <div class="input-with-icon">
+              <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por Nombre o DNI..." (keyup.enter)="handleSearchPatients()">
+            </div>
+            <div class="input-with-icon date-input">
+              <input type="date" [(ngModel)]="searchDate" (change)="handleSearchPatients()" placeholder="dd/mm/aaaa">
+            </div>
+            <button class="btn-search-global" (click)="handleSearchPatients()" [disabled]="isSearching">
+              Buscar
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Results area -->
+        <div class="search-results-area">
+          <div *ngIf="!hasSearched" class="empty-search-placeholder">
+            <div class="placeholder-content">
+              <p>Ingrese datos para buscar.</p>
+            </div>
+          </div>
+
+          <div *ngIf="hasSearched && isSearching" class="loading-state">
+            <p>Buscando pacientes...</p>
+          </div>
+
+          <div *ngIf="hasSearched && !isSearching && searchResults.length === 0" class="no-results-state">
+            <p>No se encontraron pacientes con esos criterios.</p>
+          </div>
+
+          <div class="patients-grid" *ngIf="hasSearched && !isSearching && searchResults.length > 0">
+            <div *ngFor="let pte of searchResults" class="patient-card">
+              <div class="patient-profile">
+                <div class="profile-icon">
+                  <svg viewBox="0 0 24 24" class="user-svg">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="patient-info">
+                <h3 class="patient-card-name">{{ pte.nombres }} {{ pte.apellidos }}</h3>
+                <div class="patient-meta-details">
+                  <p class="meta-row"><span class="label">DNI:</span> <span class="value">{{ pte.dni }}</span></p>
+                  <p class="meta-row"><span class="label">Género:</span> <span class="value">{{ pte.genero }}</span></p>
+                </div>
+              </div>
+
+              <div class="patient-actions">
+                <button class="btn-view-medical" (click)="handleIniciarConsulta(pte)">
+                  Ver Historia
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Perfil Section -->
+      <section *ngIf="activeSection === 'perfil'" class="profile-premium-section">
+        <div class="profile-main-card">
+          <!-- Header Info -->
+          <div class="profile-header-premium">
+            <div class="profile-title-group">
+              <h2 class="profile-name">Dr. {{ user?.nombres }} {{ user?.apellidos }}</h2>
+              <div class="profile-badges">
+                <span class="badge-specialty">{{ especialidadNombre }}</span>
+              </div>
+              <p class="profile-cmp">CMP: <span class="cmp-value">{{ user?.numero_colegiatura || '10202' }}</span></p>
+            </div>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <!-- Section: Horario y Consulta -->
+          <div class="profile-info-section">
+            <h3 class="info-section-title"><span class="title-emoji">⏰</span> Horario y Consulta</h3>
+            
+            <div class="info-grid-premium">
+              <div class="info-item-card">
+                <label class="info-label">TURNO ASIGNADO:</label>
+                <div class="info-value">{{ user?.horario_atencion || 'Lunes a Viernes 2:00 PM - 7:00 PM' }}</div>
+              </div>
+
+              <div class="info-item-card price-card">
+                <label class="info-label">COSTO DE CONSULTA:</label>
+                <div class="info-value price-value">S/. {{ user?.costo_consulta | number:'1.2-2' }}</div>
+              </div>
+
+              <div class="info-item-card status-card">
+                <label class="info-label">ESTADO EN SISTEMA:</label>
+                <div class="info-value status-value">
+                  <span class="status-check">✅</span> {{ user?.estado | titlecase }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Datos de Contacto -->
+          <div class="profile-info-section">
+            <h3 class="info-section-title"><span class="title-emoji">📞</span> Datos de Contacto</h3>
+            
+            <div class="contact-grid-premium">
+              <div class="contact-item-card">
+                <label class="info-label">EMAIL INSTITUCIONAL:</label>
+                <div class="info-value email-value">{{ user?.email }}</div>
+              </div>
+
+              <div class="contact-item-card">
+                <label class="info-label">TELÉFONO:</label>
+                <div class="info-value">{{ user?.telefono || 'No registrado' }}</div>
+              </div>
+
+              <div class="contact-item-card">
+                <label class="info-label">CELULAR:</label>
+                <div class="info-value">{{ user?.celular || 'No registrado' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal de Consulta Premium -->
+  <div class="consulta-overlay" *ngIf="showConsultaModal" (click)="showConsultaModal = false">
+    <div class="consulta-modal-premium" (click)="$event.stopPropagation()">
+      <div class="consulta-header-blue">
+        <h3 class="consulta-title">Atención Médica</h3>
+        <button class="close-consulta" (click)="showConsultaModal = false">✕</button>
+      </div>
+
+      <div class="consulta-body-premium">
+        <!-- Stepper -->
+        <div class="stepper-premium">
+          <div class="step-item" [class.active]="consultaStep >= 1">
+            <div class="step-number">1. Triaje</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step-item" [class.active]="consultaStep >= 2">
+            <div class="step-number">2. Antecedentes</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step-item" [class.active]="consultaStep >= 3">
+            <div class="step-number">3. Diagnóstico</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step-item" [class.active]="consultaStep >= 4">
+            <div class="step-number">4. Tratamiento</div>
+          </div>
+        </div>
+
+        <!-- Step 1: Triaje -->
+        <div class="step-content" *ngIf="consultaStep === 1">
+          <h4 class="step-subtitle">Signos Vitales</h4>
+          
+          <div class="vital-signs-grid">
+            <div class="form-group-premium">
+              <label>Peso (kg) <span class="prev-val" *ngIf="ultimaAtencion?.signos_vitales?.peso">(Ant: {{ ultimaAtencion.signos_vitales.peso }})</span></label>
+              <input type="text" [(ngModel)]="consultaForm.peso" placeholder="Ej: 70">
+            </div>
+
+            <div class="form-group-premium">
+              <label>Talla (m) <span class="prev-val" *ngIf="ultimaAtencion?.signos_vitales?.talla">(Ant: {{ ultimaAtencion.signos_vitales.talla }})</span></label>
+              <input type="text" [(ngModel)]="consultaForm.talla" placeholder="Ej: 1.75">
+            </div>
+
+            <div class="form-group-premium">
+              <label>Presión Arterial <span class="prev-val" *ngIf="ultimaAtencion?.signos_vitales?.presion">(Ant: {{ ultimaAtencion.signos_vitales.presion }})</span></label>
+              <input type="text" [(ngModel)]="consultaForm.presion_arterial" placeholder="Ej: 120/80">
+            </div>
+
+            <div class="form-group-premium">
+              <label>Temperatura (°C) <span class="prev-val" *ngIf="ultimaAtencion?.signos_vitales?.temperatura">(Ant: {{ ultimaAtencion.signos_vitales.temperatura }})</span></label>
+              <input type="text" [(ngModel)]="consultaForm.temperatura" placeholder="Ej: 36.5">
+            </div>
+          </div>
+
+          <div class="form-group-premium full-width">
+            <label>Grupo Sanguíneo</label>
+            <select [(ngModel)]="consultaForm.grupo_sanguineo" class="select-premium">
+              <option value="">Seleccione...</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Step 2: Antecedentes -->
+        <div class="step-content" *ngIf="consultaStep === 2">
+          <h4 class="step-subtitle">Antecedentes Médicos</h4>
+          
+          <div class="form-group-premium full-width">
+            <label>Alergias</label>
+            <textarea [(ngModel)]="consultaForm.alergias" placeholder="Ej: Penicilina, Naproxeno..."></textarea>
+          </div>
+
+          <div class="vital-signs-grid">
+            <div class="form-group-premium">
+              <label>Enfermedades Crónicas</label>
+              <textarea [(ngModel)]="consultaForm.enfermedades_cronicas" placeholder="Ej: Hipertensión..."></textarea>
+            </div>
+            <div class="form-group-premium">
+              <label>Cirugías Previas</label>
+              <textarea [(ngModel)]="consultaForm.cirugias_previas" placeholder="Ej: Colonoscopia..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-group-premium full-width">
+            <label>Medicamentos Habituales</label>
+            <textarea [(ngModel)]="consultaForm.medicamentos_actuales" placeholder="Ej: Ibuprofeno..."></textarea>
+          </div>
+
+          <div class="vital-signs-grid">
+            <div class="form-group-premium">
+              <label>Antecedentes Familiares</label>
+              <textarea [(ngModel)]="consultaForm.antecedentes_familiares" placeholder="Ej: Diabetes padre..."></textarea>
+            </div>
+            <div class="form-group-premium">
+              <label>Antecedentes Personales / Hábitos</label>
+              <textarea [(ngModel)]="consultaForm.antecedentes_personales" placeholder="Ej: Alcohol..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-group-premium full-width">
+            <label>Vacunas</label>
+            <textarea [(ngModel)]="consultaForm.vacunas" placeholder="Ej: Hepatitis B, Tétanos..."></textarea>
+          </div>
+        </div>
+
+        <!-- Step 3: Diagnóstico -->
+        <div class="step-content" *ngIf="consultaStep === 3">
+          <h4 class="step-subtitle">Diagnóstico y Síntomas</h4>
+          <div class="form-group-premium full-width">
+            <label>Síntomas / Motivo de Consulta</label>
+            <textarea [(ngModel)]="consultaForm.sintomas" placeholder="Describa los síntomas presentados..."></textarea>
+          </div>
+          <div class="form-group-premium full-width">
+            <label>Diagnósticos</label>
+            <div class="add-item-row">
+              <input type="text" [(ngModel)]="nuevoDiagnostico" placeholder="Ej: Gripe común..." (keyup.enter)="handleAgregarDiagnostico()">
+              <button class="btn-add-circle" (click)="handleAgregarDiagnostico()">+</button>
+            </div>
+            <div class="items-list-premium">
+              <div class="list-item" *ngFor="let d of diagnosticosList; let i = index">
+                <span>{{ d }}</span>
+                <button (click)="diagnosticosList.splice(i, 1)">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Tratamiento -->
+        <div class="step-content" *ngIf="consultaStep === 4">
+          <h4 class="step-subtitle">Tratamiento y Receta</h4>
+          <div class="form-group-premium full-width">
+             <label>Medicamentos</label>
+             <div class="med-input-grid">
+               <input type="text" [(ngModel)]="nuevoMedicamento.nombre" placeholder="Nombre">
+               <input type="text" [(ngModel)]="nuevoMedicamento.dosis" placeholder="Dosis">
+               <button class="btn-add-item" (click)="handleAgregarMedicamento()">Añadir</button>
+             </div>
+             <div class="items-list-premium">
+               <div class="list-item" *ngFor="let m of medicamentosList; let i = index">
+                 <span>{{ m.nombre }} ({{ m.dosis }})</span>
+                 <button (click)="medicamentosList.splice(i, 1)">✕</button>
+               </div>
+             </div>
+          </div>
+          <div class="form-group-premium full-width">
+            <label>Observaciones Adicionales</label>
+            <textarea [(ngModel)]="consultaForm.observaciones" placeholder="Recomendaciones generales..."></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="consulta-footer">
+        <button class="btn-consulta-back" *ngIf="consultaStep > 1" (click)="consultaStep = consultaStep - 1">Anterior</button>
+        <div class="spacer"></div>
+        <button class="btn-consulta-next" *ngIf="consultaStep < 4" (click)="consultaStep = consultaStep + 1">Siguiente</button>
+        <button class="btn-consulta-save" *ngIf="consultaStep === 4" (click)="handleSubmitConsulta()">Finalizar Consulta</button>
+      </div>
+    </div>
+  </div>
+</div>
