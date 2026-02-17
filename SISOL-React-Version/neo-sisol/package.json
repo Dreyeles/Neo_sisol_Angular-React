@@ -1,0 +1,23 @@
+{
+  "name": "login-app",
+  "version": "1.0.0",
+  "description": "Aplicación de login con React",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "server": "npm run dev --prefix \"c:\\Users\\User\\Desktop\\TAREAS\\CICLO_4\\Desarrollo de aplicaciones Backend\\SISOL\\neo_sisol_react2\\backend-central\"",
+    "start": "concurrently \"npm run server\" \"npm run dev\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^0.554.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^9.2.1",
+    "vite": "^5.0.8"
+  }
+}
