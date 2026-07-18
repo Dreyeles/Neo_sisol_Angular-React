@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISOL - Demo Comparativa (Angular vs React)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --angular-color: #dd0031;
+            --react-color: #149eca;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.07);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 2rem 1rem;
+        }
+
+        /* Background decorative blobs */
+        .blob {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .blob-angular {
+            top: 10%;
+            left: 10%;
+            background: var(--angular-color);
+        }
+
+        .blob-react {
+            bottom: 10%;
+            right: 10%;
+            background: var(--react-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 800px;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo-container svg {
+            width: 50px;
+            height: 50px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #ffffff, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        main {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .cards-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            h1 {
+                font-size: 3.5rem;
+            }
+        }
+
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            transition: all 0.4s ease;
+        }
+
+        .card-angular::before {
+            background: var(--angular-color);
+        }
+
+        .card-react::before {
+            background: var(--react-color);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-angular:hover {
+            box-shadow: 0 20px 40px rgba(221, 0, 49, 0.15);
+        }
+
+        .card-react:hover {
+            box-shadow: 0 20px 40px rgba(20, 158, 202, 0.15);
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge-angular {
+            background: rgba(221, 0, 49, 0.15);
+            color: #ff4a6e;
+            border: 1px solid rgba(221, 0, 49, 0.25);
+        }
+
+        .badge-react {
+            background: rgba(20, 158, 202, 0.15);
+            color: #4cd3ff;
+            border: 1px solid rgba(20, 158, 202, 0.25);
+        }
+
+        .card h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .features-list li::before {
+            content: '✓';
+            color: #34d399;
+            font-weight: bold;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-angular {
+            background: var(--angular-color);
+            color: white;
+            box-shadow: 0 4px 14px rgba(221, 0, 49, 0.3);
+        }
+
+        .btn-angular:hover {
+            background: #b30027;
+            box-shadow: 0 6px 20px rgba(221, 0, 49, 0.4);
+        }
+
+        .btn-react {
+            background: var(--react-color);
+            color: #0f172a;
+            box-shadow: 0 4px 14px rgba(20, 158, 202, 0.3);
+        }
+
+        .btn-react:hover {
+            background: #0d83a9;
+            color: white;
+            box-shadow: 0 6px 20px rgba(20, 158, 202, 0.4);
+        }
+
+        .doc-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .doc-section p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .doc-link {
+            color: #a855f7;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .doc-link:hover {
+            color: #c084fc;
+            text-decoration: underline;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-angular"></div>
+    <div class="blob blob-react"></div>
+
+    <header>
+        <div class="logo-container">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM12.5 17H11.5V11H12.5V17ZM12.5 9H11.5V7H12.5V9Z" fill="#a855f7"/>
+            </svg>
+        </div>
+        <h1>Neo SISOL</h1>
+        <p class="subtitle">Estudio comparativo implementando la misma aplicación de Citas Médicas en dos arquitecturas frontend líderes de la industria.</p>
+    </header>
+
+    <main>
+        <div class="cards-container">
+            <!-- Angular Card -->
+            <div class="card card-angular">
+                <div>
+                    <span class="badge badge-angular">Enterprise Architecture</span>
+                    <h2>🅰️ Versión Angular</h2>
+                    <p>Aplicación construida siguiendo la guía de estilos oficial de Angular. Utiliza un tipado estricto con TypeScript y modularidad optimizada.</p>
+                    <ul class="features-list">
+                        <li>Formularios Reactivos integrados</li>
+                        <li>Inyección de Dependencias nativa</li>
+                        <li>Gestión de estado asíncrona con RxJS</li>
+                        <li>Enrutador oficial de Angular</li>
+                    </ul>
+                </div>
+                <a href="/angular" id="link-angular" class="btn btn-angular">Explorar Demo Angular</a>
+            </div>
+
+            <!-- React Card -->
+            <div class="card card-react">
+                <div>
+                    <span class="badge badge-react">Flexible & Component-Based</span>
+                    <h2>⚛️ Versión React</h2>
+                    <p>Aplicación desarrollada con un enfoque de componentes funcionales ligeros y flujo de datos ágil usando React Hooks estándar.</p>
+                    <ul class="features-list">
+                        <li>Componentes Funcionales</li>
+                        <li>Gestión de estado local con useState</li>
+                        <li>Renderizado condicional fluido</li>
+                        <li>Estilos modulares e intuitivos</li>
+                    </ul>
+                </div>
+                <a href="/react" id="link-react" class="btn btn-react">Explorar Demo React</a>
+            </div>
+        </div>
+
+        <div class="doc-section">
+            <p>¿Quieres entender las diferencias técnicas en detalle? Hemos preparado una guía detallada del código.</p>
+            <a href="https://github.com/Dreyeles/Neo_sisol_Angular/blob/main/comparison_guide.md" target="_blank" class="doc-link">
+                Leer Guía de Comparación Técnica (Markdown) →
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 Neo SISOL. Todos los derechos reservados. Desarrollado con fines de portafolio y evaluación técnica.</p>
+    </footer>
+
+    <script>
+        // Si estamos ejecutando localmente o en Vercel, podemos configurar dinámicamente los href de los botones
+        // para facilitar la redirección local en el entorno de desarrollo.
+        const host = window.location.host;
+        if (host.includes('localhost') || host.includes('127.0.0.1')) {
+            // En desarrollo local, Angular suele correr en http://localhost:4200 y React en http://localhost:5173
+            document.getElementById('link-angular').href = 'http://localhost:4200';
+            document.getElementById('link-react').href = 'http://localhost:5173';
+        } else {
+            // En producción (Vercel), cambia estas URLs por tus URLs de despliegue reales de Vercel.
+            // NOTA: El usuario puede actualizarlas en el código después.
+            document.getElementById('link-angular').href = 'https://neo-sisol-angular.vercel.app';
+            document.getElementById('link-react').href = 'https://neo-sisol-react.vercel.app';
+        }
+    </script>
+</body>
+</html>

@@ -12,6 +12,7 @@ import Dashboard from './components/Dashboard';
 import DoctorDashboard from './components/DoctorDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import './App.css';
+import VersionSwitch from './components/VersionSwitch';
 
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -54,57 +55,52 @@ function App() {
     setIsServiciosOpen(true);
   };
 
-  // Si el usuario está autenticado, mostrar el Dashboard correspondiente
+  let content;
+
   if (isAuthenticated) {
     if (user?.role === 'admin') {
-      return (
-        <div className="App">
-          <AdminDashboard user={user} onLogout={handleLogout} />
-        </div>
-      );
+      content = <AdminDashboard user={user} onLogout={handleLogout} />;
+    } else if (user?.role === 'doctor') {
+      content = <DoctorDashboard user={user} onLogout={handleLogout} />;
+    } else {
+      content = <Dashboard user={user} onLogout={handleLogout} />;
     }
-    if (user?.role === 'doctor') {
-      return (
-        <div className="App">
-          <DoctorDashboard user={user} onLogout={handleLogout} />
-        </div>
-      );
-    }
-    return (
-      <div className="App">
-        <Dashboard user={user} onLogout={handleLogout} />
-      </div>
+  } else {
+    content = (
+      <>
+        <Navbar
+          onLoginClick={handleOpenLogin}
+          onRegisterClick={handleOpenRegister}
+          onServiciosClick={handleServiciosClick}
+        />
+        <Hero onAgendarCitaClick={handleOpenLogin} />
+        <Especialidades />
+        <Servicios
+          isOpen={isServiciosOpen}
+          onToggle={() => setIsServiciosOpen(!isServiciosOpen)}
+        />
+        <AcercaDe />
+        <Contacto />
+        <Footer />
+        <Login
+          isOpen={isLoginOpen}
+          onClose={handleCloseLogin}
+          onSwitchToRegister={handleOpenRegister}
+          onLoginSuccess={handleLoginSuccess}
+        />
+        <Register
+          isOpen={isRegisterOpen}
+          onClose={handleCloseRegister}
+          onSwitchToLogin={handleOpenLogin}
+        />
+      </>
     );
   }
 
-  // Si no está autenticado, mostrar la página principal
   return (
     <div className="App">
-      <Navbar
-        onLoginClick={handleOpenLogin}
-        onRegisterClick={handleOpenRegister}
-        onServiciosClick={handleServiciosClick}
-      />
-      <Hero onAgendarCitaClick={handleOpenLogin} />
-      <Especialidades />
-      <Servicios
-        isOpen={isServiciosOpen}
-        onToggle={() => setIsServiciosOpen(!isServiciosOpen)}
-      />
-      <AcercaDe />
-      <Contacto />
-      <Footer />
-      <Login
-        isOpen={isLoginOpen}
-        onClose={handleCloseLogin}
-        onSwitchToRegister={handleOpenRegister}
-        onLoginSuccess={handleLoginSuccess}
-      />
-      <Register
-        isOpen={isRegisterOpen}
-        onClose={handleCloseRegister}
-        onSwitchToLogin={handleOpenLogin}
-      />
+      {content}
+      <VersionSwitch />
     </div>
   );
 }
