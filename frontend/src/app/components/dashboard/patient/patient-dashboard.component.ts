@@ -100,6 +100,38 @@ export class PatientDashboardComponent implements OnInit {
         });
     }
 
+    loadDemoTemplate() {
+        this.citaEspecialidad = '1';
+        this.loadingMedicos = true;
+        this.availability = null;
+        this.appointmentService.getMedicosByEspecialidad(1).subscribe({
+            next: (res) => {
+                if (res.status === 'OK') {
+                    this.medicos = res.data;
+                    this.citaMedico = '1'; // Juan Pérez
+                    
+                    // Tomorrow's date
+                    const today = new Date();
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(today.getDate() + 1);
+                    const yyyy = tomorrow.getFullYear();
+                    const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+                    const dd = String(tomorrow.getDate()).padStart(2, '0');
+                    this.citaFecha = `${yyyy}-${mm}-${dd}`;
+                    
+                    this.citaTurno = 'manana';
+                    this.citaMotivo = 'Consulta preventiva anual de control.';
+                    this.loadingMedicos = false;
+                    this.checkAvailability();
+                    this.cdr.detectChanges();
+                }
+            },
+            error: () => {
+                this.loadingMedicos = false;
+            }
+        });
+    }
+
     descargarInforme(citaId: number) {
         alert('Descargando informe para la cita #' + citaId + '...');
         // Aquí iría la lógica real de descarga

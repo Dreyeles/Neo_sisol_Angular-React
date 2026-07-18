@@ -191,6 +191,36 @@ const Dashboard = ({ user, onLogout }) => {
     return () => clearTimeout(timeoutId);
   }, [citaMedico, citaFecha, citaTurno]);
 
+  const handleLoadDemoTemplate = async () => {
+    setCitaEspecialidad('1');
+    setLoadingMedicos(true);
+    setAvailability(null);
+    try {
+      const response = await fetch(`http://localhost:5000/api/medicos/por-especialidad/1`);
+      const data = await response.json();
+      if (data.status === 'OK') {
+        setMedicos(data.data);
+        setCitaMedico('1'); // Juan Pérez
+        
+        // Tomorrow's date
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        const yyyy = tomorrow.getFullYear();
+        const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const dd = String(tomorrow.getDate()).padStart(2, '0');
+        
+        setCitaFecha(`${yyyy}-${mm}-${dd}`);
+        setCitaTurno('manana');
+        setCitaMotivo('Consulta preventiva anual de control.');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingMedicos(false);
+    }
+  };
+
   const handleAgendarCita = (e) => {
     e.preventDefault();
     if (availability && availability.available) {
@@ -399,6 +429,9 @@ const Dashboard = ({ user, onLogout }) => {
           {activeSection === 'agendar' && (
             <div className="section-content">
               <h2>Agendar Nueva Cita</h2>
+              <div className="demo-fill-container" style={{ marginBottom: '20px' }}>
+                <button type="button" className="btn-demo-fill" onClick={handleLoadDemoTemplate}>⚡ Cargar Plantilla Demo (1-Clic)</button>
+              </div>
               <form className="agendar-form" onSubmit={handleAgendarCita}>
                 <div className="form-group">
                   <label>Especialidad</label>
@@ -470,7 +503,12 @@ const Dashboard = ({ user, onLogout }) => {
                 </div>
 
                 {/* Mensaje de disponibilidad */}
-                {checkingAvailability && <p className="status-checking">Verificando disponibilidad...</p>}
+                {checkingAvailability && (
+                  <div className="status-checking">
+                    <div className="spinner"></div>
+                    Verificando disponibilidad...
+                  </div>
+                )}
                 {!checkingAvailability && availability && (
                   <div className={`availability-message ${availability.available ? 'success' : 'error'}`}>
                     {availability.message}

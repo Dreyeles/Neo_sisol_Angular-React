@@ -82,6 +82,9 @@
       <!-- Agendar Section -->
       <div *ngIf="activeSection === 'agendar'" class="section-content">
         <h2>Agendar Nueva Cita</h2>
+        <div class="demo-fill-container" style="margin-bottom: 20px;">
+          <button type="button" class="btn-demo-fill" (click)="loadDemoTemplate()">⚡ Cargar Plantilla Demo (1-Clic)</button>
+        </div>
         <form class="agendar-form" (ngSubmit)="handleAgendarCita()">
           <div class="form-group">
             <label>Especialidad</label>
