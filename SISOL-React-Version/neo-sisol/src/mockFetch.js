@@ -7,6 +7,35 @@ const MockDbHelper = {
   init() {
     if (this.isInitialized) return;
 
+    // Verificar si los usuarios de prueba principales existen. Si no, limpiar y recrear la base de datos de simulación
+    const currentUsersRaw = localStorage.getItem('mock_usuarios');
+    let needsReset = false;
+    if (!currentUsersRaw) {
+      needsReset = true;
+    } else {
+      try {
+        const currentUsers = JSON.parse(currentUsersRaw);
+        const emails = currentUsers.map(u => u.email.toLowerCase());
+        if (!emails.includes('paciente@email.com') || 
+            !emails.includes('medico@email.com') || 
+            !emails.includes('admin@email.com')) {
+          needsReset = true;
+        }
+      } catch (e) {
+        needsReset = true;
+      }
+    }
+
+    if (needsReset) {
+      localStorage.removeItem('mock_especialidades');
+      localStorage.removeItem('mock_medicos');
+      localStorage.removeItem('mock_usuarios');
+      localStorage.removeItem('mock_pacientes');
+      localStorage.removeItem('mock_citas');
+      localStorage.removeItem('mock_atenciones');
+      localStorage.removeItem('mock_servicios');
+    }
+
     // Initialize Especialidades
     if (!localStorage.getItem('mock_especialidades')) {
       const specs = [
