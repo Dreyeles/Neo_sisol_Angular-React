@@ -966,3 +966,32 @@
     color: #c53030;
     border: 1px solid #fed7d7;
 }
+
+.status-checking {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #ebf8ff;
+    border: 1px solid #bee3f8;
+    border-radius: 8px;
+    color: #2b6cb0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 15px 0;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #bee3f8;
+    border-top: 2px solid #2b6cb0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
