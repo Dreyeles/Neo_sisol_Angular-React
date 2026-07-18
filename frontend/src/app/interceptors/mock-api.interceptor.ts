@@ -91,7 +91,10 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
         checkData.fecha,
         checkData.turno
       );
-      return returnResponse({ status: 'OK', available }, 200, requestDelay);
+      const message = available 
+        ? '🎉 El horario seleccionado está disponible para agendar.' 
+        : '❌ El médico ya cuenta con una cita en este turno. Por favor, elija otro horario.';
+      return returnResponse({ status: 'OK', available, message }, 200, requestDelay);
     }
 
     if (url.endsWith('/pagos/procesar') && req.method === 'POST') {

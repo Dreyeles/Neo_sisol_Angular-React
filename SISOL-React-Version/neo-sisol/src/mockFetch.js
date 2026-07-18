@@ -479,7 +479,10 @@ window.fetch = async function (resource, options) {
         body.fecha,
         body.turno
       );
-      responseBody = { status: 'OK', available };
+      const message = available 
+        ? '🎉 El horario seleccionado está disponible para agendar.' 
+        : '❌ El médico ya cuenta con una cita en este turno. Por favor, elija otro horario.';
+      responseBody = { status: 'OK', available, message };
       status = 200;
     } else if (url.endsWith('/pagos/procesar') && method === 'POST') {
       responseBody = MockDbHelper.createAppointment(body);
