@@ -113,41 +113,6 @@ export class MockDbHelper {
       localStorage.setItem('mock_especialidades', JSON.stringify(specs));
     }
 
-    // Inicializar Médicos y sus Usuarios vinculados
-    if (!localStorage.getItem('mock_medicos')) {
-      const doctors: MockDoctor[] = [
-        { id_medico: 1, id_usuario: 101, nombres: 'Juan', apellidos: 'Pérez', id_especialidad: 1, especialidad_nombre: 'Medicina General', numero_colegiatura: '12345', costo_consulta: 30, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.juan@sisol.com' },
-        { id_medico: 2, id_usuario: 102, nombres: 'Ana', apellidos: 'Acosta', id_especialidad: 1, especialidad_nombre: 'Medicina General', numero_colegiatura: '12346', costo_consulta: 30, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.ana@sisol.com' },
-        { id_medico: 3, id_usuario: 103, nombres: 'Bruno', apellidos: 'Benítez', id_especialidad: 2, especialidad_nombre: 'Cardiología', numero_colegiatura: '23456', costo_consulta: 50, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.bruno@sisol.com' },
-        { id_medico: 4, id_usuario: 104, nombres: 'Beatriz', apellidos: 'Barrios', id_especialidad: 2, especialidad_nombre: 'Cardiología', numero_colegiatura: '23457', costo_consulta: 50, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.beatriz@sisol.com' },
-        { id_medico: 5, id_usuario: 105, nombres: 'Carlos', apellidos: 'Castro', id_especialidad: 3, especialidad_nombre: 'Dermatología', numero_colegiatura: '34567', costo_consulta: 45, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.carlos@sisol.com' },
-        { id_medico: 6, id_usuario: 106, nombres: 'Carla', apellidos: 'Carrillo', id_especialidad: 3, especialidad_nombre: 'Dermatología', numero_colegiatura: '34568', costo_consulta: 45, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.carla@sisol.com' },
-        { id_medico: 7, id_usuario: 107, nombres: 'Daniel', apellidos: 'Díaz', id_especialidad: 4, especialidad_nombre: 'Pediatría', numero_colegiatura: '45678', costo_consulta: 40, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.daniel@sisol.com' },
-        { id_medico: 8, id_usuario: 108, nombres: 'Diana', apellidos: 'Domínguez', id_especialidad: 4, especialidad_nombre: 'Pediatría', numero_colegiatura: '45679', costo_consulta: 40, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.diana@sisol.com' },
-        { id_medico: 9, id_usuario: 109, nombres: 'Eduardo', apellidos: 'Espinoza', id_especialidad: 5, especialidad_nombre: 'Traumatología', numero_colegiatura: '56789', costo_consulta: 50, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.eduardo@sisol.com' },
-        { id_medico: 10, id_usuario: 110, nombres: 'Elena', apellidos: 'Estrada', id_especialidad: 5, especialidad_nombre: 'Traumatología', numero_colegiatura: '56780', costo_consulta: 50, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.elena@sisol.com' }
-      ];
-      localStorage.setItem('mock_medicos', JSON.stringify(doctors));
-
-      // Agregar los usuarios de estos médicos
-      const existingUsers: MockUser[] = JSON.parse(localStorage.getItem('mock_usuarios') || '[]');
-      doctors.forEach(doc => {
-        if (!existingUsers.some(u => u.email === doc.email)) {
-          existingUsers.push({
-            id_usuario: doc.id_usuario,
-            email: doc.email,
-            nombres: doc.nombres,
-            apellidos: doc.apellidos,
-            nombre: `${doc.nombres} ${doc.apellidos}`,
-            tipo_usuario: 'medico',
-            id_medico: doc.id_medico,
-            password: 'medico123' // Contraseña por defecto para médicos
-          });
-        }
-      });
-      localStorage.setItem('mock_usuarios', JSON.stringify(existingUsers));
-    }
-
     // Inicializar Usuarios (Paciente, Admin y Médico por defecto)
     if (!localStorage.getItem('mock_usuarios')) {
       const defaultUsers: MockUser[] = [
@@ -187,6 +152,41 @@ export class MockDbHelper {
         }
       ];
       localStorage.setItem('mock_usuarios', JSON.stringify(defaultUsers));
+    }
+
+    // Inicializar Médicos y sus Usuarios vinculados
+    if (!localStorage.getItem('mock_medicos')) {
+      const doctors: MockDoctor[] = [
+        { id_medico: 1, id_usuario: 101, nombres: 'Juan', apellidos: 'Pérez', id_especialidad: 1, especialidad_nombre: 'Medicina General', numero_colegiatura: '12345', costo_consulta: 30, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.juan@sisol.com' },
+        { id_medico: 2, id_usuario: 102, nombres: 'Ana', apellidos: 'Acosta', id_especialidad: 1, especialidad_nombre: 'Medicina General', numero_colegiatura: '12346', costo_consulta: 30, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.ana@sisol.com' },
+        { id_medico: 3, id_usuario: 103, nombres: 'Bruno', apellidos: 'Benítez', id_especialidad: 2, especialidad_nombre: 'Cardiología', numero_colegiatura: '23456', costo_consulta: 50, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.bruno@sisol.com' },
+        { id_medico: 4, id_usuario: 104, nombres: 'Beatriz', apellidos: 'Barrios', id_especialidad: 2, especialidad_nombre: 'Cardiología', numero_colegiatura: '23457', costo_consulta: 50, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.beatriz@sisol.com' },
+        { id_medico: 5, id_usuario: 105, nombres: 'Carlos', apellidos: 'Castro', id_especialidad: 3, especialidad_nombre: 'Dermatología', numero_colegiatura: '34567', costo_consulta: 45, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.carlos@sisol.com' },
+        { id_medico: 6, id_usuario: 106, nombres: 'Carla', apellidos: 'Carrillo', id_especialidad: 3, especialidad_nombre: 'Dermatología', numero_colegiatura: '34568', costo_consulta: 45, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.carla@sisol.com' },
+        { id_medico: 7, id_usuario: 107, nombres: 'Daniel', apellidos: 'Díaz', id_especialidad: 4, especialidad_nombre: 'Pediatría', numero_colegiatura: '45678', costo_consulta: 40, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.daniel@sisol.com' },
+        { id_medico: 8, id_usuario: 108, nombres: 'Diana', apellidos: 'Domínguez', id_especialidad: 4, especialidad_nombre: 'Pediatría', numero_colegiatura: '45679', costo_consulta: 40, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.diana@sisol.com' },
+        { id_medico: 9, id_usuario: 109, nombres: 'Eduardo', apellidos: 'Espinoza', id_especialidad: 5, especialidad_nombre: 'Traumatología', numero_colegiatura: '56789', costo_consulta: 50, turno: 'Mañana', horario_atencion: '08:00 - 13:00', email: 'medico.eduardo@sisol.com' },
+        { id_medico: 10, id_usuario: 110, nombres: 'Elena', apellidos: 'Estrada', id_especialidad: 5, especialidad_nombre: 'Traumatología', numero_colegiatura: '56780', costo_consulta: 50, turno: 'Tarde', horario_atencion: '14:00 - 19:00', email: 'medico.elena@sisol.com' }
+      ];
+      localStorage.setItem('mock_medicos', JSON.stringify(doctors));
+
+      // Agregar los usuarios de estos médicos
+      const existingUsers: MockUser[] = JSON.parse(localStorage.getItem('mock_usuarios') || '[]');
+      doctors.forEach(doc => {
+        if (!existingUsers.some(u => u.email === doc.email)) {
+          existingUsers.push({
+            id_usuario: doc.id_usuario,
+            email: doc.email,
+            nombres: doc.nombres,
+            apellidos: doc.apellidos,
+            nombre: `${doc.nombres} ${doc.apellidos}`,
+            tipo_usuario: 'medico',
+            id_medico: doc.id_medico,
+            password: 'medico123'
+          });
+        }
+      });
+      localStorage.setItem('mock_usuarios', JSON.stringify(existingUsers));
     }
 
     // Inicializar Pacientes correspondientes a los usuarios
