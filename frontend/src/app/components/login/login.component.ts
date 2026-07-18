@@ -71,6 +71,24 @@ export class LoginComponent {
         });
     }
 
+    quickLogin(role: 'patient' | 'doctor' | 'admin'): void {
+        let email = '';
+        let password = '';
+        if (role === 'patient') {
+            email = 'paciente@email.com';
+            password = 'paciente123';
+        } else if (role === 'doctor') {
+            email = 'medico@email.com';
+            password = 'medico123';
+        } else if (role === 'admin') {
+            email = 'admin@email.com';
+            password = 'admin123';
+        }
+
+        this.loginForm.patchValue({ email, password });
+        this.onSubmit();
+    }
+
     private navigateToDashboard(role: string): void {
         switch (role) {
             case 'admin':

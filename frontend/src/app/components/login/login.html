@@ -87,6 +87,15 @@
         </button>
       </form>
 
+      <div class="demo-access-section">
+        <p class="demo-access-title">Acceso Rápido Demo (1-Clic):</p>
+        <div class="demo-buttons">
+          <button type="button" class="btn-demo-pill" (click)="quickLogin('patient')">🔑 Paciente</button>
+          <button type="button" class="btn-demo-pill" (click)="quickLogin('doctor')">🔑 Médico</button>
+          <button type="button" class="btn-demo-pill" (click)="quickLogin('admin')">🔑 Admin</button>
+        </div>
+      </div>
+
       <div class="login-footer">
         <p>¿No tienes una cuenta? <a href="#" (click)="onSwitchToRegister($event)">Regístrate</a></p>
       </div>

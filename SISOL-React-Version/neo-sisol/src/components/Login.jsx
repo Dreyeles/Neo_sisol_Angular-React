@@ -66,54 +66,37 @@ const Login = ({ isOpen = false, onClose = () => { }, onSwitchToRegister, onLogi
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validate()) {
-      return;
-    }
-
+  const executeLogin = async (email, password) => {
     setIsLoading(true);
-
-    // Petición real de login
     try {
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (data.status === 'OK') {
         const userData = data.data;
-        // Adaptar estructura si es necesario para el frontend
         const adaptedUser = {
           email: userData.email,
           nombre: userData.nombres || userData.nombre || 'Usuario',
           role: userData.tipo_usuario === 'medico' ? 'doctor' : userData.tipo_usuario === 'administrativo' ? 'admin' : 'patient',
           id: userData.id_usuario,
-          // Guardar IDs específicos según rol
           id_paciente: userData.id_paciente,
           id_medico: userData.id_medico,
           id_administrativo: userData.id_personal_administrativo,
-          // Datos completos por si acaso
           ...userData
         };
 
         console.log('Login exitoso:', adaptedUser);
 
-        // Llamar a la función de éxito del login
         if (onLoginSuccess) {
           onLoginSuccess(adaptedUser);
         }
-
-        // Cerrar modal después de login exitoso
         onClose();
       } else {
         alert('Error al iniciar sesión: ' + data.message);
@@ -124,6 +107,31 @@ const Login = ({ isOpen = false, onClose = () => { }, onSwitchToRegister, onLogi
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validate()) {
+      return;
+    }
+    executeLogin(formData.email, formData.password);
+  };
+
+  const handleQuickLogin = (role) => {
+    let email = '';
+    let password = '';
+    if (role === 'patient') {
+      email = 'paciente@email.com';
+      password = 'paciente123';
+    } else if (role === 'doctor') {
+      email = 'medico@email.com';
+      password = 'medico123';
+    } else if (role === 'admin') {
+      email = 'admin@email.com';
+      password = 'admin123';
+    }
+    setFormData({ email, password });
+    executeLogin(email, password);
   };
 
   if (!isOpen) return null;
@@ -187,6 +195,15 @@ const Login = ({ isOpen = false, onClose = () => { }, onSwitchToRegister, onLogi
               {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
           </form>
+
+          <div className="demo-access-section">
+            <p class="demo-access-title">Acceso Rápido Demo (1-Clic):</p>
+            <div className="demo-buttons">
+              <button type="button" className="btn-demo-pill" onClick={() => handleQuickLogin('patient')}>🔑 Paciente</button>
+              <button type="button" className="btn-demo-pill" onClick={() => handleQuickLogin('doctor')}>🔑 Médico</button>
+              <button type="button" className="btn-demo-pill" onClick={() => handleQuickLogin('admin')}>🔑 Admin</button>
+            </div>
+          </div>
 
           <div className="login-footer">
             <p>¿No tienes una cuenta? <a href="#" onClick={(e) => {
